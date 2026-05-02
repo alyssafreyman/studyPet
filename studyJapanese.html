@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N4 Study Buddy 🌸</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf6ff;
+    --card: #ffffff;
+    --pink: #ff85a1;
+    --pink-light: #ffe0e8;
+    --pink-dark: #d45f7a;
+    --purple: #b388ff;
+    --purple-light: #ede7ff;
+    --purple-dark: #7c4dff;
+    --teal: #4dd0c4;
+    --teal-light: #e0f7f5;
+    --yellow: #ffd54f;
+    --yellow-light: #fff8e1;
+    --text: #3a2a4a;
+    --text-muted: #9a8aaa;
+    --border: #f0e6f6;
+    --shadow: 0 4px 24px rgba(180,140,220,0.13);
+    --shadow-md: 0 8px 32px rgba(180,140,220,0.18);
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(255,133,161,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 90% 80%, rgba(179,136,255,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(77,208,196,0.05) 0%, transparent 60%);
+  }
+
+  /* floating sakura petals */
+  .petal { position: fixed; pointer-events: none; font-size: 16px; animation: fall linear infinite; opacity: 0.5; z-index: 0; }
+  @keyframes fall {
+    0% { transform: translateY(-30px) rotate(0deg); opacity: 0.5; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
+
+  .wrapper {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  header h1 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--pink-dark);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  header h1 span { color: var(--purple-dark); }
+  header .subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .jp-text { font-family: 'Noto Sans JP', sans-serif; font-size: 0.85rem; color: var(--purple); margin-top: 2px; }
+
+  /* ── TOP GRID ── */
+  .top-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  /* ── TAMAGOTCHI ── */
+  .tama-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 2px solid var(--pink-light);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tama-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, rgba(255,133,161,0.15), transparent 70%);
+    border-radius: 50%;
+  }
+  .tama-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--pink);
+  }
+  .tama-name {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .tama-canvas-wrap {
+    width: 120px;
+    height: 120px;
+    position: relative;
+  }
+  canvas#tama { width: 120px; height: 120px; }
+  .tama-mood {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-align: center;
+    min-height: 20px;
+    transition: color 0.4s;
+  }
+  .tama-xp-bar-wrap {
+    width: 100%;
+    background: var(--pink-light);
+    border-radius: 99px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .tama-xp-bar {
+    height: 10px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    transition: width 0.6s cubic-bezier(.34,1.56,.64,1);
+    width: 0%;
+  }
+  .tama-xp-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  /* ── COUNTDOWN ── */
+  .countdown-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 2px solid var(--purple-light);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .countdown-card::before {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: -30px;
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, rgba(179,136,255,0.15), transparent 70%);
+    border-radius: 50%;
+  }
+  .cd-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--purple);
+  }
+  .cd-date {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .cd-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+  .cd-unit {
+    background: var(--purple-light);
+    border-radius: var(--radius-sm);
+    padding: 8px 4px;
+    text-align: center;
+  }
+  .cd-num {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--purple-dark);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .cd-lbl {
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--purple);
+    margin-top: 2px;
+  }
+  .cd-message {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--pink-dark);
+    text-align: center;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  /* ── SESSION PROGRESS ── */
+  .progress-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 2px solid var(--teal-light);
+    box-shadow: var(--shadow);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .prog-info { flex: 1; }
+  .prog-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+  .prog-bar-track {
+    height: 14px;
+    background: var(--teal-light);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .prog-bar-fill {
+    height: 14px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--teal), #26c6da);
+    transition: width 0.5s cubic-bezier(.34,1.56,.64,1);
+    width: 0%;
+    position: relative;
+  }
+  .prog-bar-fill::after {
+    content: '✦';
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 9px;
+    color: white;
+    opacity: 0.8;
+  }
+  .prog-stats {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+  .prog-stats strong { color: var(--teal); }
+  .prog-pct {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--teal);
+    min-width: 72px;
+    text-align: right;
+  }
+  .reset-btn {
+    background: none;
+    border: 2px solid var(--border);
+    border-radius: 99px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: var(--pink); color: var(--pink); }
+
+  /* ── CHECKLIST PHASES ── */
+  .phase-heading {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin: 24px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .phase-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 2px solid var(--border);
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .section-card:hover { border-color: rgba(179,136,255,0.3); }
+
+  .section-header {
+    padding: 14px 18px 6px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .section-title-wrap {}
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .section-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .section-prog-mini {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--purple);
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+
+  .section-bar-wrap {
+    margin: 8px 18px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .section-bar {
+    height: 4px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    transition: width 0.4s cubic-bezier(.34,1.56,.64,1);
+    width: 0%;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 18px;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .task-item:hover { background: rgba(179,136,255,0.04); }
+  .task-item.done { opacity: 0.65; }
+
+  .checkbox {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all 0.2s;
+    font-size: 11px;
+  }
+  .task-item.done .checkbox {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    border-color: transparent;
+    color: white;
+  }
+  .task-text { flex: 1; }
+  .task-label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+    transition: color 0.2s;
+  }
+  .task-item.done .task-label {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+  .task-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .task-badge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 99px;
+    white-space: nowrap;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+  .badge-daily { background: var(--pink-light); color: var(--pink-dark); }
+  .badge-weekly { background: var(--yellow-light); color: #b07a00; }
+  .badge-session { background: var(--purple-light); color: var(--purple-dark); }
+
+  /* pop animation on complete */
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+  .pop { animation: pop 0.3s ease; }
+
+  /* ── CONFETTI ── */
+  .confetti-piece {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    animation: confetti-fall 1.2s ease-out forwards;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  @keyframes confetti-fall {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+    100% { opacity: 0; transform: translateY(200px) rotate(720deg) scale(0.5); }
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  footer .jp { font-family: 'Noto Sans JP', sans-serif; display: block; margin-top: 4px; color: var(--purple); font-size: 0.82rem; }
+
+  /* responsive */
+  @media (max-width: 520px) {
+    .top-grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.7rem; }
+    .cd-num { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating petals -->
+<div id="petals"></div>
+
+<div class="wrapper">
+
+  <header>
+    <h1>N4 Study Buddy <span>🌸</span></h1>
+    <div class="subtitle">Your daily JLPT N4 companion · Houston 2026</div>
+    <div class="jp-text">毎日勉強しよう！</div>
+  </header>
+
+  <!-- TOP GRID: Tamagotchi + Countdown -->
+  <div class="top-grid">
+
+    <!-- Tamagotchi -->
+    <div class="tama-card">
+      <div class="tama-label">Study Buddy</div>
+      <div class="tama-name" id="tama-name">Hanako ハナコ</div>
+      <div class="tama-canvas-wrap">
+        <canvas id="tama" width="120" height="120"></canvas>
+      </div>
+      <div class="tama-mood" id="tama-mood">Wake me up with some tasks! 😴</div>
+      <div class="tama-xp-bar-wrap"><div class="tama-xp-bar" id="tama-xp-bar"></div></div>
+      <div class="tama-xp-label" id="tama-xp-label">0 / 0 tasks</div>
+    </div>
+
+    <!-- Countdown -->
+    <div class="countdown-card">
+      <div class="cd-label">Exam Countdown</div>
+      <div class="cd-date">🗓 December 6, 2026 · Houston, TX</div>
+      <div class="cd-grid">
+        <div class="cd-unit"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">Days</div></div>
+        <div class="cd-unit"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">Hours</div></div>
+        <div class="cd-unit"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">Mins</div></div>
+        <div class="cd-unit"><div class="cd-num" id="cd-s">--</div><div class="cd-lbl">Secs</div></div>
+      </div>
+      <div class="cd-message" id="cd-message">がんばって！You've got this! 🌸</div>
+    </div>
+  </div>
+
+  <!-- Session Progress Bar -->
+  <div class="progress-card">
+    <div class="prog-info">
+      <div class="prog-title">Today's Session Progress</div>
+      <div class="prog-bar-track"><div class="prog-bar-fill" id="prog-fill"></div></div>
+      <div class="prog-stats"><strong id="prog-done">0</strong> of <strong id="prog-total">0</strong> tasks complete</div>
+    </div>
+    <div class="prog-pct" id="prog-pct">0%</div>
+    <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div id="checklist-root"></div>
+
+  <footer>
+    Made with 🌸 for your N4 journey
+    <span class="jp">合格を祈っています！(Wishing you success!)</span>
+  </footer>
+
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────
+const phases = [
+  {
+    label: "✦ Every Session — Always Do These",
+    color: "#ff85a1",
+    sections: [
+      {
+        title: "Opening Routine", sub: "~15 min · do this before anything else",
+        items: [
+          { label: "Anki flashcard review", note: "Clear your due cards — vocab, kanji, grammar", freq: "daily" },
+          { label: "Write today's date and goal in Japanese", note: "e.g. 今日は＿月＿日です。目標：〜", freq: "daily" },
+        ]
+      },
+      {
+        title: "Closing Routine", sub: "~5 min · always end here",
+        items: [
+          { label: "Add new words from today's session to Anki", note: "Any unfamiliar vocab from reading or exercises", freq: "daily" },
+          { label: "Note one thing that was hard today", note: "Write it down — revisit at next session", freq: "session" },
+        ]
+      }
+    ]
+  },
+  {
+    label: "Phase 1 · May–June — Foundation (Genki I)",
+    color: "#4dd0c4",
+    sections: [
+      {
+        title: "Script Practice (weeks 1–2 only)", sub: "Until you can read both scripts without hesitation",
+        items: [
+          { label: "Drill 5 new hiragana characters", note: "Write each 10×, then cover and recall", freq: "daily" },
+          { label: "Drill 5 new katakana characters", note: "Same method as hiragana", freq: "daily" },
+          { label: "Read a hiragana/katakana recognition chart", note: "Aim for <3 sec per character", freq: "daily" },
+        ]
+      },
+      {
+        title: "Genki I Lesson (weeks 3–12)", sub: "One lesson every ~4–5 days · 12 lessons total",
+        items: [
+          { label: "Read the dialogue section aloud", note: "Don't skip — listening + speaking builds recall", freq: "session" },
+          { label: "Study grammar points with example sentences", note: "Write 2 personal example sentences per grammar point", freq: "session" },
+          { label: "Complete the workbook exercises for this lesson", note: "Check answers and correct mistakes immediately", freq: "session" },
+          { label: "Learn lesson vocabulary (add to Anki)", note: "New words go into Anki same day", freq: "session" },
+          { label: "Practice writing lesson kanji (stroke order)", note: "Write each kanji 10× in correct stroke order", freq: "session" },
+        ]
+      },
+      {
+        title: "Weekly Listening (Phase 1)", sub: "Once per week, ~30 min",
+        items: [
+          { label: "Watch or listen to beginner Japanese content", note: "JapanesePod101, Comprehensible Japanese (beginner level)", freq: "weekly" },
+          { label: "Write down 3 words or phrases you heard", note: "Look them up, add to Anki if N5/N4 level", freq: "weekly" },
+        ]
+      }
+    ]
+  },
+  {
+    label: "Phase 2 · July–September — Core N4 (Genki II)",
+    color: "#b388ff",
+    sections: [
+      {
+        title: "Genki II Lesson", sub: "One lesson every ~5–6 days · 10 lessons total",
+        items: [
+          { label: "Read the dialogue section aloud", note: "Pay attention to new grammar in context", freq: "session" },
+          { label: "Study N4 grammar points carefully", note: "Focus on: te-form uses, conditionals (たら/ば/と/なら), passive, causative", freq: "session" },
+          { label: "Complete workbook exercises", note: "Do all exercises — check and correct mistakes", freq: "session" },
+          { label: "Learn lesson vocabulary (add to Anki)", note: "Target: 1,500 total words by end of September", freq: "session" },
+          { label: "Practice lesson kanji", note: "Target: 300 kanji total by end of phase 2", freq: "session" },
+        ]
+      },
+      {
+        title: "Vocabulary & Kanji Push", sub: "In addition to lesson vocab",
+        items: [
+          { label: "Add 10–15 N4-specific words to Anki (not from lesson)", note: "Use JLPT Sensei N4 vocab list as a supplement", freq: "daily" },
+          { label: "Write 5 kanji from memory without reference", note: "Cover and recall — track which ones you miss", freq: "daily" },
+        ]
+      },
+      {
+        title: "Weekly Listening & Reading (Phase 2)", sub: "Once or twice per week",
+        items: [
+          { label: "Listen to N4-level audio (30–45 min)", note: "NHK Web Easy news read-along, JapanesePod101 N4", freq: "weekly" },
+          { label: "Read a graded reader or NHK Web Easy article", note: "Look up max 5 unknown words — don't stop at every word", freq: "weekly" },
+          { label: "Complete one N4 grammar drill set", note: "Use JLPT Sensei or Nihongo no Mori on YouTube", freq: "weekly" },
+        ]
+      }
+    ]
+  },
+  {
+    label: "Phase 3 · October–December — Exam Prep",
+    color: "#ffd54f",
+    sections: [
+      {
+        title: "Daily Exam-Style Practice", sub: "Replace lesson study with targeted test prep",
+        items: [
+          { label: "Complete one vocabulary section (mock test format)", note: "Timed — simulate real exam pressure", freq: "daily" },
+          { label: "Complete one grammar section (mock test format)", note: "Focus on particles, verb forms, sentence order", freq: "daily" },
+          { label: "Do a 10-question reading comprehension drill", note: "Short passages only — work up to medium-length by November", freq: "daily" },
+          { label: "Listen to one N4 audio passage + answer questions", note: "Don't rewind — replicate exam conditions", freq: "daily" },
+        ]
+      },
+      {
+        title: "Weekly Full Mock Exam", sub: "Every weekend, timed (115 min total)",
+        items: [
+          { label: "Take a full timed N4 mock test", note: "No pausing, no looking things up mid-test", freq: "weekly" },
+          { label: "Score and review every wrong answer", note: "Look up the grammar/vocab — add gaps to Anki", freq: "weekly" },
+          { label: "Identify your weakest section this week", note: "Dedicate extra time to it the following week", freq: "weekly" },
+        ]
+      },
+      {
+        title: "Final 2 Weeks (late November)", sub: "Wind down intensity, sharpen confidence",
+        items: [
+          { label: "Review Anki deck — focus on lingering leeches", note: "Cards you keep getting wrong need extra attention", freq: "daily" },
+          { label: "Re-read grammar notes for hardest points", note: "Conditionals, giving/receiving verbs, te-form uses", freq: "daily" },
+          { label: "Do light reading and listening only — no new material", note: "Reinforce what you know; don't introduce new things", freq: "daily" },
+          { label: "Get 8 hours of sleep the week before the exam", note: "Sleep matters more than last-minute cramming", freq: "daily" },
+        ]
+      }
+    ]
+  }
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────
+const state = {};
+let totalItems = 0;
+
+// ─── BUILD CHECKLIST ─────────────────────────────────────────────────────
+function buildChecklist() {
+  const root = document.getElementById('checklist-root');
+  let idx = 0;
+
+  phases.forEach((phase, pi) => {
+    const ph = document.createElement('div');
+    ph.className = 'phase-heading';
+    ph.textContent = phase.label;
+    root.appendChild(ph);
+
+    phase.sections.forEach((sec, si) => {
+      const card = document.createElement('div');
+      card.className = 'section-card';
+
+      const progMini = document.createElement('div');
+      progMini.className = 'section-prog-mini';
+      progMini.id = `secprog-${pi}-${si}`;
+      progMini.textContent = `0 / ${sec.items.length}`;
+
+      card.innerHTML = `
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <div class="section-title">${sec.title}</div>
+            <div class="section-sub">${sec.sub}</div>
+          </div>
+        </div>
+        <div class="section-bar-wrap"><div class="section-bar" id="secbar-${pi}-${si}"></div></div>
+      `;
+      card.querySelector('.section-header').appendChild(progMini);
+
+      sec.items.forEach((item, ii) => {
+        const id = `item-${pi}-${si}-${ii}`;
+        state[id] = false;
+        totalItems++;
+
+        const row = document.createElement('div');
+        row.className = 'task-item';
+        row.id = id;
+        row.innerHTML = `
+          <div class="checkbox" id="cb-${id}"></div>
+          <div class="task-text">
+            <div class="task-label">${item.label}</div>
+            <div class="task-note">${item.note}</div>
+          </div>
+          <span class="task-badge badge-${item.freq}">${item.freq}</span>
+        `;
+        row.addEventListener('click', () => toggleItem(id, pi, si, sec));
+        card.appendChild(row);
+      });
+
+      root.appendChild(card);
+    });
+  });
+
+  document.getElementById('prog-total').textContent = totalItems;
+  updateTama(0, totalItems);
+}
+
+function toggleItem(id, pi, si, sec) {
+  state[id] = !state[id];
+  const row = document.getElementById(id);
+  const cb = document.getElementById(`cb-${id}`);
+  row.classList.toggle('done', state[id]);
+  cb.textContent = state[id] ? '✓' : '';
+  cb.classList.toggle('pop');
+  setTimeout(() => cb.classList.remove('pop'), 300);
+
+  if (state[id]) spawnConfetti(row);
+
+  // update section bar
+  const sectionKeys = sec.items.map((_, ii) => `item-${pi}-${si}-${ii}`);
+  const secDone = sectionKeys.filter(k => state[k]).length;
+  document.getElementById(`secbar-${pi}-${si}`).style.width = (secDone / sec.items.length * 100) + '%';
+  document.getElementById(`secprog-${pi}-${si}`).textContent = `${secDone} / ${sec.items.length}`;
+
+  updateProgress();
+}
+
+function updateProgress() {
+  const done = Object.values(state).filter(Boolean).length;
+  const pct = totalItems ? Math.round(done / totalItems * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-done').textContent = done;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  updateTama(done, totalItems);
+}
+
+function resetAll() {
+  Object.keys(state).forEach(k => { state[k] = false; });
+  document.querySelectorAll('.task-item').forEach(r => r.classList.remove('done'));
+  document.querySelectorAll('.checkbox').forEach(cb => cb.textContent = '');
+  document.querySelectorAll('.section-bar').forEach(b => b.style.width = '0%');
+  phases.forEach((phase, pi) => phase.sections.forEach((sec, si) => {
+    const el = document.getElementById(`secprog-${pi}-${si}`);
+    if (el) el.textContent = `0 / ${sec.items.length}`;
+  }));
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-done').textContent = '0';
+  document.getElementById('prog-pct').textContent = '0%';
+  updateTama(0, totalItems);
+}
+
+// ─── TAMAGOTCHI ──────────────────────────────────────────────────────────
+let animFrame = 0;
+let animTimer = 0;
+
+const moods = [
+  { min: 0,   label: "Wake me up with some tasks! 😴",       bodyColor: '#d8d0e8', eyeType: 'sleepy',   mouthType: 'flat',   blush: false, sparkle: false },
+  { min: 0.01,label: "Ok ok, I'm awake... 🥱",               bodyColor: '#e8d8f0', eyeType: 'half',     mouthType: 'flat',   blush: false, sparkle: false },
+  { min: 0.15,label: "Let's do this! 🌱",                    bodyColor: '#f0c8e0', eyeType: 'open',     mouthType: 'smile',  blush: false, sparkle: false },
+  { min: 0.35,label: "You're on a roll! 💪",                 bodyColor: '#ffb3c8', eyeType: 'open',     mouthType: 'big',    blush: true,  sparkle: false },
+  { min: 0.55,label: "Halfway there, sugoi! ✨",             bodyColor: '#ff8fab', eyeType: 'star',     mouthType: 'big',    blush: true,  sparkle: true  },
+  { min: 0.75,label: "Almost done, senpai noticed! 🌟",      bodyColor: '#ff6b9d', eyeType: 'star',     mouthType: 'uwu',    blush: true,  sparkle: true  },
+  { min: 0.95,label: "PERFECT SESSION! 合格確実！ 🎉",        bodyColor: '#ff4785', eyeType: 'heart',    mouthType: 'uwu',    blush: true,  sparkle: true  },
+];
+
+function getMood(done, total) {
+  if (total === 0) return moods[0];
+  const pct = done / total;
+  let mood = moods[0];
+  for (const m of moods) { if (pct >= m.min) mood = m; }
+  return mood;
+}
+
+function updateTama(done, total) {
+  const mood = getMood(done, total);
+  document.getElementById('tama-mood').textContent = mood.label;
+  const pct = total ? done / total : 0;
+  document.getElementById('tama-xp-bar').style.width = (pct * 100) + '%';
+  document.getElementById('tama-xp-label').textContent = `${done} / ${total} tasks`;
+  drawTama(mood, pct);
+}
+
+function drawTama(mood, pct) {
+  const canvas = document.getElementById('tama');
+  const ctx = canvas.getContext('2d');
+  const W = 120, H = 120;
+  ctx.clearRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H / 2 + 4;
+  const bounce = mood.sparkle ? Math.sin(Date.now() / 300) * 3 : 0;
+
+  // body
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + bounce, 36, 32, 0, 0, Math.PI * 2);
+  ctx.fillStyle = mood.bodyColor;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(180,100,140,0.2)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // ears
+  ctx.beginPath();
+  ctx.ellipse(cx - 22, cy - 24 + bounce, 10, 14, -0.4, 0, Math.PI * 2);
+  ctx.fillStyle = mood.bodyColor;
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx + 22, cy - 24 + bounce, 10, 14, 0.4, 0, Math.PI * 2);
+  ctx.fillStyle = mood.bodyColor;
+  ctx.fill();
+  ctx.stroke();
+
+  // inner ear
+  ctx.beginPath();
+  ctx.ellipse(cx - 22, cy - 24 + bounce, 5, 8, -0.4, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffcdd2';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx + 22, cy - 24 + bounce, 5, 8, 0.4, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffcdd2';
+  ctx.fill();
+
+  // tail
+  ctx.beginPath();
+  ctx.moveTo(cx + 30, cy + bounce + 10);
+  ctx.quadraticCurveTo(cx + 52, cy + bounce, cx + 46, cy + bounce - 16);
+  ctx.strokeStyle = mood.bodyColor;
+  ctx.lineWidth = 7;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // blush
+  if (mood.blush) {
+    ctx.beginPath();
+    ctx.ellipse(cx - 18, cy + bounce + 6, 8, 5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,100,150,0.25)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + 18, cy + bounce + 6, 8, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // eyes
+  const eyeY = cy - 4 + bounce;
+  if (mood.eyeType === 'sleepy') {
+    ctx.beginPath(); ctx.arc(cx - 10, eyeY, 5, Math.PI, 0); ctx.strokeStyle = '#7a5060'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + 10, eyeY, 5, Math.PI, 0); ctx.stroke();
+  } else if (mood.eyeType === 'half') {
+    ctx.beginPath(); ctx.arc(cx - 10, eyeY, 5, Math.PI * 1.1, Math.PI * 1.9); ctx.strokeStyle = '#7a5060'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + 10, eyeY, 5, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
+  } else if (mood.eyeType === 'open') {
+    ctx.beginPath(); ctx.arc(cx - 10, eyeY, 5, 0, Math.PI * 2); ctx.fillStyle = '#5a3050'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 10, eyeY, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx - 9, eyeY - 1, 2, 0, Math.PI * 2); ctx.fillStyle = 'white'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 11, eyeY - 1, 2, 0, Math.PI * 2); ctx.fill();
+  } else if (mood.eyeType === 'star') {
+    drawStar(ctx, cx - 10, eyeY, 6, '#ffcc00');
+    drawStar(ctx, cx + 10, eyeY, 6, '#ffcc00');
+  } else if (mood.eyeType === 'heart') {
+    drawHeart(ctx, cx - 10, eyeY - 2, 7, '#ff4785');
+    drawHeart(ctx, cx + 10, eyeY - 2, 7, '#ff4785');
+  }
+
+  // mouth
+  const mouthY = cy + 10 + bounce;
+  ctx.strokeStyle = '#c06080';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  if (mood.mouthType === 'flat') {
+    ctx.beginPath(); ctx.moveTo(cx - 8, mouthY); ctx.lineTo(cx + 8, mouthY); ctx.stroke();
+  } else if (mood.mouthType === 'smile') {
+    ctx.beginPath(); ctx.arc(cx, mouthY - 4, 8, 0.2, Math.PI - 0.2); ctx.stroke();
+  } else if (mood.mouthType === 'big') {
+    ctx.beginPath(); ctx.arc(cx, mouthY - 4, 10, 0.1, Math.PI - 0.1); ctx.fillStyle = '#c06080'; ctx.fill(); ctx.stroke();
+  } else if (mood.mouthType === 'uwu') {
+    ctx.beginPath(); ctx.arc(cx - 6, mouthY - 3, 5, 0.1, Math.PI - 0.1); ctx.fillStyle = '#ff4785'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 6, mouthY - 3, 5, 0.1, Math.PI - 0.1); ctx.fill();
+  }
+
+  // sparkles
+  if (mood.sparkle) {
+    const t = Date.now() / 500;
+    const sparks = [[cx - 30, cy - 28], [cx + 32, cy - 22], [cx - 26, cy + 18], [cx + 28, cy + 14]];
+    sparks.forEach(([x, y], i) => {
+      const s = Math.sin(t + i * 1.2) > 0;
+      if (s) {
+        ctx.font = '14px serif'; ctx.fillText('✦', x, y);
+      }
+    });
+  }
+}
+
+function drawStar(ctx, cx, cy, r, color) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * r, -Math.sin((18 + i * 72) * Math.PI / 180) * r);
+    ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * r / 2, -Math.sin((54 + i * 72) * Math.PI / 180) * r / 2);
+  }
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawHeart(ctx, cx, cy, size, color) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.beginPath();
+  ctx.moveTo(0, size * 0.35);
+  ctx.bezierCurveTo(size * 0.6, -size * 0.3, size * 1.1, size * 0.3, 0, size);
+  ctx.bezierCurveTo(-size * 1.1, size * 0.3, -size * 0.6, -size * 0.3, 0, size * 0.35);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.restore();
+}
+
+// animation loop
+function animLoop() {
+  const done = Object.values(state).filter(Boolean).length;
+  const mood = getMood(done, totalItems);
+  if (mood.sparkle || mood.eyeType === 'sleepy') drawTama(mood, totalItems ? done / totalItems : 0);
+  requestAnimationFrame(animLoop);
+}
+
+// ─── COUNTDOWN ───────────────────────────────────────────────────────────
+const EXAM_DATE = new Date('2026-12-06T09:00:00');
+
+const cdMessages = [
+  [300, "You're almost there! 最後の力を！ 🔥"],
+  [60,  "One month left — push it! 頑張れ！ 💪"],
+  [100, "Two months to go — keep the streak! 🌟"],
+  [150, "Study hard, you've got this! 勉強！ ✨"],
+  [200, "You're in the home stretch! がんばって！ 🌸"],
+  [Infinity, "Every day counts — start studying! 毎日！ 🎌"],
+];
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = EXAM_DATE - now;
+  if (diff <= 0) {
+    ['cd-d','cd-h','cd-m','cd-s'].forEach(id => document.getElementById(id).textContent = '0');
+    document.getElementById('cd-message').textContent = '試験の日！頑張って！ 🎌';
+    return;
+  }
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  document.getElementById('cd-d').textContent = String(days).padStart(2, '0');
+  document.getElementById('cd-h').textContent = String(hours).padStart(2, '0');
+  document.getElementById('cd-m').textContent = String(mins).padStart(2, '0');
+  document.getElementById('cd-s').textContent = String(secs).padStart(2, '0');
+  for (const [threshold, msg] of cdMessages) {
+    if (days <= threshold) { document.getElementById('cd-message').textContent = msg; break; }
+  }
+}
+
+// ─── CONFETTI ─────────────────────────────────────────────────────────────
+const confettiColors = ['#ff85a1','#b388ff','#4dd0c4','#ffd54f','#ff6b9d','#7c4dff'];
+function spawnConfetti(el) {
+  const rect = el.getBoundingClientRect();
+  for (let i = 0; i < 12; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.left = (rect.left + Math.random() * rect.width) + 'px';
+    c.style.top = (rect.top + window.scrollY + Math.random() * 10) + 'px';
+    c.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    c.style.animationDelay = (Math.random() * 0.3) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 1500);
+  }
+}
+
+// ─── PETALS ───────────────────────────────────────────────────────────────
+function spawnPetals() {
+  const container = document.getElementById('petals');
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = '🌸';
+    p.style.left = (Math.random() * 100) + 'vw';
+    p.style.animationDuration = (8 + Math.random() * 10) + 's';
+    p.style.animationDelay = (Math.random() * 12) + 's';
+    p.style.fontSize = (10 + Math.random() * 10) + 'px';
+    container.appendChild(p);
+  }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+buildChecklist();
+updateCountdown();
+setInterval(updateCountdown, 1000);
+animLoop();
+spawnPetals();
+updateTama(0, totalItems);
+</script>
+</body>
+</html>
