@@ -463,6 +463,18 @@
   }
   footer .jp { font-family: 'Noto Sans JP', sans-serif; display: block; margin-top: 4px; color: var(--purple); font-size: 0.82rem; }
 
+
+  .week-banner { margin-bottom: 8px; }
+  .week-badge {
+    display: inline-block;
+    font-size: 0.72rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    padding: 4px 12px; border-radius: 99px;
+    border: 1.5px solid; margin-bottom: 8px;
+  }
+  .week-title { font-size: 1.2rem; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+  .week-sub   { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+
   /* responsive */
   @media (max-width: 520px) {
     .top-grid { grid-template-columns: 1fr; }
@@ -493,6 +505,7 @@
       <div class="tama-name" id="tama-name">Hanako ハナコ</div>
       <div class="tama-canvas-wrap">
         <canvas id="tama" width="120" height="120"></canvas>
+        <img id="tama-gif" src="" alt="Study buddy" style="display:none;width:120px;height:120px;object-fit:contain;image-rendering:pixelated;">
       </div>
       <div class="tama-mood" id="tama-mood">Wake me up with some tasks! 😴</div>
       <div class="tama-xp-bar-wrap"><div class="tama-xp-bar" id="tama-xp-bar"></div></div>
@@ -535,213 +548,373 @@
 </div>
 
 <script>
-// ─── DATA ───────────────────────────────────────────────────────────────
-const phases = [
-  {
-    label: "✦ Every Session — Always Do These",
-    color: "#ff85a1",
-    sections: [
-      {
-        title: "Opening Routine", sub: "~15 min · do this before anything else",
-        items: [
-          { label: "Anki flashcard review", note: "Clear your due cards — vocab, kanji, grammar", freq: "daily" },
-          { label: "Write today's date and goal in Japanese", note: "e.g. 今日は＿月＿日です。目標：〜", freq: "daily" },
-        ]
-      },
-      {
-        title: "Closing Routine", sub: "~5 min · always end here",
-        items: [
-          { label: "Add new words from today's session to Anki", note: "Any unfamiliar vocab from reading or exercises", freq: "daily" },
-          { label: "Note one thing that was hard today", note: "Write it down — revisit at next session", freq: "session" },
-        ]
-      }
-    ]
-  },
-  {
-    label: "Phase 1 · May–June — Foundation (Genki I)",
-    color: "#4dd0c4",
-    sections: [
-      {
-        title: "Script Practice (weeks 1–2 only)", sub: "Until you can read both scripts without hesitation",
-        items: [
-          { label: "Drill 5 new hiragana characters", note: "Write each 10×, then cover and recall", freq: "daily" },
-          { label: "Drill 5 new katakana characters", note: "Same method as hiragana", freq: "daily" },
-          { label: "Read a hiragana/katakana recognition chart", note: "Aim for <3 sec per character", freq: "daily" },
-        ]
-      },
-      {
-        title: "Genki I Lesson (weeks 3–12)", sub: "One lesson every ~4–5 days · 12 lessons total",
-        items: [
-          { label: "Read the dialogue section aloud", note: "Don't skip — listening + speaking builds recall", freq: "session" },
-          { label: "Study grammar points with example sentences", note: "Write 2 personal example sentences per grammar point", freq: "session" },
-          { label: "Complete the workbook exercises for this lesson", note: "Check answers and correct mistakes immediately", freq: "session" },
-          { label: "Learn lesson vocabulary (add to Anki)", note: "New words go into Anki same day", freq: "session" },
-          { label: "Practice writing lesson kanji (stroke order)", note: "Write each kanji 10× in correct stroke order", freq: "session" },
-        ]
-      },
-      {
-        title: "Weekly Listening (Phase 1)", sub: "Once per week, ~30 min",
-        items: [
-          { label: "Watch or listen to beginner Japanese content", note: "JapanesePod101, Comprehensible Japanese (beginner level)", freq: "weekly" },
-          { label: "Write down 3 words or phrases you heard", note: "Look them up, add to Anki if N5/N4 level", freq: "weekly" },
-        ]
-      }
-    ]
-  },
-  {
-    label: "Phase 2 · July–September — Core N4 (Genki II)",
-    color: "#b388ff",
-    sections: [
-      {
-        title: "Genki II Lesson", sub: "One lesson every ~5–6 days · 10 lessons total",
-        items: [
-          { label: "Read the dialogue section aloud", note: "Pay attention to new grammar in context", freq: "session" },
-          { label: "Study N4 grammar points carefully", note: "Focus on: te-form uses, conditionals (たら/ば/と/なら), passive, causative", freq: "session" },
-          { label: "Complete workbook exercises", note: "Do all exercises — check and correct mistakes", freq: "session" },
-          { label: "Learn lesson vocabulary (add to Anki)", note: "Target: 1,500 total words by end of September", freq: "session" },
-          { label: "Practice lesson kanji", note: "Target: 300 kanji total by end of phase 2", freq: "session" },
-        ]
-      },
-      {
-        title: "Vocabulary & Kanji Push", sub: "In addition to lesson vocab",
-        items: [
-          { label: "Add 10–15 N4-specific words to Anki (not from lesson)", note: "Use JLPT Sensei N4 vocab list as a supplement", freq: "daily" },
-          { label: "Write 5 kanji from memory without reference", note: "Cover and recall — track which ones you miss", freq: "daily" },
-        ]
-      },
-      {
-        title: "Weekly Listening & Reading (Phase 2)", sub: "Once or twice per week",
-        items: [
-          { label: "Listen to N4-level audio (30–45 min)", note: "NHK Web Easy news read-along, JapanesePod101 N4", freq: "weekly" },
-          { label: "Read a graded reader or NHK Web Easy article", note: "Look up max 5 unknown words — don't stop at every word", freq: "weekly" },
-          { label: "Complete one N4 grammar drill set", note: "Use JLPT Sensei or Nihongo no Mori on YouTube", freq: "weekly" },
-        ]
-      }
-    ]
-  },
-  {
-    label: "Phase 3 · October–December — Exam Prep",
-    color: "#ffd54f",
-    sections: [
-      {
-        title: "Daily Exam-Style Practice", sub: "Replace lesson study with targeted test prep",
-        items: [
-          { label: "Complete one vocabulary section (mock test format)", note: "Timed — simulate real exam pressure", freq: "daily" },
-          { label: "Complete one grammar section (mock test format)", note: "Focus on particles, verb forms, sentence order", freq: "daily" },
-          { label: "Do a 10-question reading comprehension drill", note: "Short passages only — work up to medium-length by November", freq: "daily" },
-          { label: "Listen to one N4 audio passage + answer questions", note: "Don't rewind — replicate exam conditions", freq: "daily" },
-        ]
-      },
-      {
-        title: "Weekly Full Mock Exam", sub: "Every weekend, timed (115 min total)",
-        items: [
-          { label: "Take a full timed N4 mock test", note: "No pausing, no looking things up mid-test", freq: "weekly" },
-          { label: "Score and review every wrong answer", note: "Look up the grammar/vocab — add gaps to Anki", freq: "weekly" },
-          { label: "Identify your weakest section this week", note: "Dedicate extra time to it the following week", freq: "weekly" },
-        ]
-      },
-      {
-        title: "Final 2 Weeks (late November)", sub: "Wind down intensity, sharpen confidence",
-        items: [
-          { label: "Review Anki deck — focus on lingering leeches", note: "Cards you keep getting wrong need extra attention", freq: "daily" },
-          { label: "Re-read grammar notes for hardest points", note: "Conditionals, giving/receiving verbs, te-form uses", freq: "daily" },
-          { label: "Do light reading and listening only — no new material", note: "Reinforce what you know; don't introduce new things", freq: "daily" },
-          { label: "Get 8 hours of sleep the week before the exam", note: "Sleep matters more than last-minute cramming", freq: "daily" },
-        ]
-      }
-    ]
-  }
+// ─── STUDY SCHEDULE ───────────────────────────────────────────────────────
+// Study start date: May 2, 2026. Exam: Dec 6, 2026.
+const STUDY_START = new Date('2026-05-02');
+const EXAM_DATE   = new Date('2026-12-06T09:00:00');
+
+// Each entry: { weekStart, weekEnd (inclusive, 1-indexed), phase, label, sections[] }
+// "always" tasks are injected separately every day.
+// freq: 'daily' | 'weekly'
+
+const ALWAYS_TASKS = [
+  { label: "Anki flashcard review", note: "Clear your due cards — vocab, kanji, grammar", freq: "daily" },
+  { label: "Write today's date and goal in Japanese", note: "e.g. 今日は＿月＿日です。目標：〜", freq: "daily" },
+  { label: "Add new words from today's session to Anki", note: "Any unfamiliar vocab from reading or exercises", freq: "daily" },
+  { label: "Note one thing that was hard today", note: "Write it down — revisit at next session", freq: "daily" },
 ];
 
-// ─── STATE ───────────────────────────────────────────────────────────────
-const state = {};
-let totalItems = 0;
+const SCHEDULE = [
+  // ── PHASE 1 ──────────────────────────────────────────────────────────────
+  {
+    weeks: [1, 2], phase: "Phase 1 · Foundation", phaseColor: "#4dd0c4",
+    title: "Hiragana & Katakana Mastery",
+    sub: "Weeks 1–2 · Learn both phonetic scripts cold",
+    tasks: [
+      { label: "Drill 5 new hiragana characters", note: "Write each 10×, then cover and recall", freq: "daily" },
+      { label: "Drill 5 new katakana characters", note: "Same method as hiragana", freq: "daily" },
+      { label: "Read a full hiragana/katakana chart", note: "Aim for <3 sec per character recognition", freq: "daily" },
+    ]
+  },
+  {
+    weeks: [3, 4], phase: "Phase 1 · Foundation", phaseColor: "#4dd0c4",
+    title: "Genki I · Chapters 1–4",
+    sub: "Weeks 3–4 · Basic grammar, greetings, nouns",
+    tasks: [
+      { label: "Read the chapter dialogue aloud", note: "Don't skip — listening + speaking builds recall", freq: "daily" },
+      { label: "Study grammar points + write 2 personal example sentences", note: "One sentence per grammar point minimum", freq: "daily" },
+      { label: "Complete workbook exercises for this chapter", note: "Check answers and correct mistakes immediately", freq: "daily" },
+      { label: "Learn chapter vocabulary (add to Anki)", note: "New words go into Anki same day", freq: "daily" },
+      { label: "Practice writing chapter kanji (stroke order)", note: "Write each kanji 10× in correct stroke order", freq: "daily" },
+      { label: "Watch/listen to beginner Japanese content (30 min)", note: "JapanesePod101 or Comprehensible Japanese beginner level", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [5, 6], phase: "Phase 1 · Foundation", phaseColor: "#4dd0c4",
+    title: "Genki I · Chapters 5–8",
+    sub: "Weeks 5–6 · Verbs, て-form, adjectives",
+    tasks: [
+      { label: "Read the chapter dialogue aloud", note: "Focus on verb conjugation in context", freq: "daily" },
+      { label: "Study grammar points + write 2 personal example sentences", note: "Pay special attention to て-form patterns", freq: "daily" },
+      { label: "Complete workbook exercises for this chapter", note: "Check answers and correct mistakes immediately", freq: "daily" },
+      { label: "Learn chapter vocabulary (add to Anki)", note: "New words go into Anki same day", freq: "daily" },
+      { label: "Practice writing chapter kanji (stroke order)", note: "Write each kanji 10× in correct stroke order", freq: "daily" },
+      { label: "Watch/listen to beginner Japanese content (30 min)", note: "JapanesePod101 or Comprehensible Japanese beginner level", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [7, 8], phase: "Phase 1 · Foundation", phaseColor: "#4dd0c4",
+    title: "Genki I · Chapters 9–12",
+    sub: "Weeks 7–8 · Finish Volume 1",
+    tasks: [
+      { label: "Read the chapter dialogue aloud", note: "You should be reading hiragana/katakana fluently now", freq: "daily" },
+      { label: "Study grammar points + write 2 personal example sentences", note: "Focus on て-form continuations and requests", freq: "daily" },
+      { label: "Complete workbook exercises for this chapter", note: "Check answers and correct mistakes immediately", freq: "daily" },
+      { label: "Learn chapter vocabulary (add to Anki)", note: "New words go into Anki same day", freq: "daily" },
+      { label: "Practice writing chapter kanji (stroke order)", note: "Write each kanji 10× in correct stroke order", freq: "daily" },
+      { label: "Watch/listen to beginner Japanese content (30 min)", note: "JapanesePod101 or Comprehensible Japanese beginner level", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [9, 10], phase: "Phase 1 · Foundation", phaseColor: "#4dd0c4",
+    title: "Genki I Review + N5 Vocab Drills",
+    sub: "Weeks 9–10 · Consolidate everything before moving to Genki II",
+    tasks: [
+      { label: "Review one Genki I chapter grammar summary", note: "Work backwards from ch. 12 to ch. 1", freq: "daily" },
+      { label: "Drill N5 vocabulary list (20 words)", note: "Use JLPT Sensei N5 list — test yourself before checking", freq: "daily" },
+      { label: "Write 5 sentences using grammar from Genki I", note: "Mix grammar points — don't repeat the same pattern twice", freq: "daily" },
+      { label: "Watch/listen to N5 Japanese content (30 min)", note: "Try NHK Web Easy articles with furigana", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [11, 12], phase: "Phase 1 · Foundation", phaseColor: "#4dd0c4",
+    title: "Listening Practice + N5 Kanji Push",
+    sub: "Weeks 11–12 · Build listening ear before N4 content",
+    tasks: [
+      { label: "Drill 10 N5 kanji from memory (no reference)", note: "Cover and recall — note which ones you miss", freq: "daily" },
+      { label: "Listen to a Japanese audio clip (20–30 min)", note: "Write down 3 words or phrases you caught", freq: "daily" },
+      { label: "Read one NHK Web Easy article", note: "Look up max 5 unknown words", freq: "daily" },
+      { label: "Take a short N5 practice quiz", note: "JLPT Sensei or Nihongo no Mori on YouTube", freq: "weekly" },
+    ]
+  },
+  // ── PHASE 2 ──────────────────────────────────────────────────────────────
+  {
+    weeks: [13, 15], phase: "Phase 2 · Core N4", phaseColor: "#b388ff",
+    title: "Genki II · Chapters 13–16",
+    sub: "Weeks 13–15 · N4 grammar begins here",
+    tasks: [
+      { label: "Read the chapter dialogue aloud", note: "Note new N4 grammar patterns in context", freq: "daily" },
+      { label: "Study N4 grammar points + write 2 example sentences", note: "Focus on: potential form, volitional form, て-form extensions", freq: "daily" },
+      { label: "Complete workbook exercises for this chapter", note: "Check answers and correct mistakes immediately", freq: "daily" },
+      { label: "Learn chapter vocabulary (add to Anki)", note: "Target: 1,500 total words by end of September", freq: "daily" },
+      { label: "Add 10 N4-specific vocab words to Anki (supplement list)", note: "Use JLPT Sensei N4 vocab list in addition to Genki", freq: "daily" },
+      { label: "Practice lesson kanji", note: "Target: 300 total kanji by end of Phase 2", freq: "daily" },
+      { label: "Listen to N4-level audio (30–45 min)", note: "NHK Web Easy read-along, JapanesePod101 N4", freq: "weekly" },
+      { label: "Complete one N4 grammar drill set", note: "JLPT Sensei website or Nihongo no Mori YouTube", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [16, 18], phase: "Phase 2 · Core N4", phaseColor: "#b388ff",
+    title: "Genki II · Chapters 17–19",
+    sub: "Weeks 16–18 · Conditionals and passive forms",
+    tasks: [
+      { label: "Read the chapter dialogue aloud", note: "Pay close attention to conditional patterns", freq: "daily" },
+      { label: "Study N4 grammar points + write 2 example sentences", note: "Focus on: たら, ば, と, なら conditionals", freq: "daily" },
+      { label: "Complete workbook exercises for this chapter", note: "Check answers and correct mistakes immediately", freq: "daily" },
+      { label: "Learn chapter vocabulary (add to Anki)", note: "New words go in same day", freq: "daily" },
+      { label: "Add 10 N4-specific vocab words to Anki (supplement list)", note: "Use JLPT Sensei N4 vocab list in addition to Genki", freq: "daily" },
+      { label: "Write 5 kanji from memory without reference", note: "Cover and recall — track which ones you miss", freq: "daily" },
+      { label: "Listen to N4-level audio (30–45 min)", note: "NHK Web Easy read-along, JapanesePod101 N4", freq: "weekly" },
+      { label: "Read a graded reader or NHK Web Easy article", note: "Look up max 5 unknown words — don't stop at every word", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [19, 21], phase: "Phase 2 · Core N4", phaseColor: "#b388ff",
+    title: "Genki II · Chapters 20–23",
+    sub: "Weeks 19–21 · Finish Volume 2 · passive & causative",
+    tasks: [
+      { label: "Read the chapter dialogue aloud", note: "These chapters cover passive and causative — read carefully", freq: "daily" },
+      { label: "Study N4 grammar points + write 2 example sentences", note: "Focus on: passive (〜られる), causative (〜させる), giving/receiving verbs", freq: "daily" },
+      { label: "Complete workbook exercises for this chapter", note: "Check answers and correct mistakes immediately", freq: "daily" },
+      { label: "Learn chapter vocabulary (add to Anki)", note: "New words go in same day", freq: "daily" },
+      { label: "Add 10 N4-specific vocab words to Anki (supplement list)", note: "Use JLPT Sensei N4 vocab list in addition to Genki", freq: "daily" },
+      { label: "Write 5 kanji from memory without reference", note: "Cover and recall — track which ones you miss", freq: "daily" },
+      { label: "Listen to N4-level audio (30–45 min)", note: "NHK Web Easy read-along, JapanesePod101 N4", freq: "weekly" },
+      { label: "Read a graded reader or NHK Web Easy article", note: "Look up max 5 unknown words", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [22, 24], phase: "Phase 2 · Core N4", phaseColor: "#b388ff",
+    title: "Anki Vocab Push + Kanji to 300",
+    sub: "Weeks 22–24 · Hit your N4 vocab and kanji targets",
+    tasks: [
+      { label: "Add 15 N4 vocab words to Anki", note: "Work through JLPT Sensei N4 vocabulary list systematically", freq: "daily" },
+      { label: "Write 10 kanji from memory without reference", note: "Cover and recall — track missed ones in a notebook", freq: "daily" },
+      { label: "Write 5 sentences using new vocab from this week", note: "Don't look up the words — test yourself first", freq: "daily" },
+      { label: "Listen to N4-level audio (30–45 min)", note: "NHK Web Easy, JapanesePod101 N4", freq: "weekly" },
+      { label: "Complete one N4 grammar drill set", note: "JLPT Sensei or Nihongo no Mori YouTube", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [25, 26], phase: "Phase 2 · Core N4", phaseColor: "#b388ff",
+    title: "N4 Grammar Gaps + Listening",
+    sub: "Weeks 25–26 · Fill holes before exam prep begins",
+    tasks: [
+      { label: "Review one N4 grammar point from a weak area", note: "Make a list of grammar you're unsure of and work through it", freq: "daily" },
+      { label: "Add 10 N4 vocab words to Anki", note: "Focus on words you keep forgetting", freq: "daily" },
+      { label: "Listen to N4 audio and answer comprehension questions", note: "Don't rewind — practice listening in one pass", freq: "daily" },
+      { label: "Complete one N4 grammar drill set", note: "JLPT Sensei or Nihongo no Mori YouTube", freq: "weekly" },
+      { label: "Read a graded reader or NHK Web Easy article", note: "Read for meaning, not perfection", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [27, 28], phase: "Phase 2 · Core N4", phaseColor: "#b388ff",
+    title: "Graded Readers + Reading Practice",
+    sub: "Weeks 27–28 · Build reading stamina before exam prep",
+    tasks: [
+      { label: "Read one graded reader passage or NHK Web Easy article", note: "Look up max 5 words — push through the rest", freq: "daily" },
+      { label: "Add 10 N4 vocab words to Anki", note: "Prioritize words that appear in reading passages", freq: "daily" },
+      { label: "Write a short paragraph in Japanese (3–5 sentences)", note: "Use vocabulary and grammar from the past week", freq: "daily" },
+      { label: "Listen to N4 audio (30 min)", note: "JapanesePod101 N4 or NHK Web Easy read-along", freq: "weekly" },
+      { label: "Complete one N4 reading comprehension drill", note: "Timed — practice pacing for the exam", freq: "weekly" },
+    ]
+  },
+  // ── PHASE 3 ──────────────────────────────────────────────────────────────
+  {
+    weeks: [29, 30], phase: "Phase 3 · Exam Prep", phaseColor: "#ffd54f",
+    title: "First Mock Tests + Identify Weak Spots",
+    sub: "Weeks 29–30 · Start simulating real exam conditions",
+    tasks: [
+      { label: "Complete one timed vocabulary section (mock format)", note: "Simulate real exam pressure — no pausing", freq: "daily" },
+      { label: "Complete one timed grammar section (mock format)", note: "Focus on particles, verb forms, sentence ordering", freq: "daily" },
+      { label: "Do a 10-question reading comprehension drill", note: "Short passages — work up to medium-length by November", freq: "daily" },
+      { label: "Listen to one N4 audio passage + answer questions", note: "No rewinding — replicate exam conditions", freq: "daily" },
+      { label: "Take a full timed N4 mock test (115 min)", note: "No pausing, no looking things up mid-test", freq: "weekly" },
+      { label: "Score and review every wrong answer", note: "Look up the grammar/vocab — add gaps to Anki", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [31, 33], phase: "Phase 3 · Exam Prep", phaseColor: "#ffd54f",
+    title: "Intensive Listening + Reading Drills",
+    sub: "Weeks 31–33 · Sharpen your two hardest sections",
+    tasks: [
+      { label: "Complete one timed vocabulary section (mock format)", note: "Track your score each day — aim to improve", freq: "daily" },
+      { label: "Complete one timed grammar section (mock format)", note: "Focus on your weakest grammar patterns", freq: "daily" },
+      { label: "Do a reading comprehension drill (medium passage)", note: "Build up to full-length passages", freq: "daily" },
+      { label: "Listen to two N4 audio passages + answer questions", note: "No rewinding — identify what you're missing", freq: "daily" },
+      { label: "Take a full timed N4 mock test (115 min)", note: "No pausing, no looking things up mid-test", freq: "weekly" },
+      { label: "Score + review wrong answers + identify weakest section", note: "Dedicate extra time to that section next week", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [34, 35], phase: "Phase 3 · Exam Prep", phaseColor: "#ffd54f",
+    title: "Full Mock Exams + Light Review",
+    sub: "Weeks 34–35 · Polish everything, no new material",
+    tasks: [
+      { label: "Review Anki deck — focus on lingering leeches", note: "Cards you keep getting wrong need extra attention", freq: "daily" },
+      { label: "Re-read grammar notes for hardest points", note: "Conditionals, giving/receiving verbs, て-form uses", freq: "daily" },
+      { label: "Do light reading (NHK Web Easy) — no new material", note: "Reinforce what you know — don't introduce anything new", freq: "daily" },
+      { label: "Take a full timed N4 mock test (115 min)", note: "Final tune-up — review wrong answers carefully", freq: "weekly" },
+    ]
+  },
+  {
+    weeks: [36, 37], phase: "Phase 3 · Final Stretch", phaseColor: "#ff85a1",
+    title: "Final 2 Weeks — Wind Down & Rest",
+    sub: "Weeks 36–37 · Sharpen confidence, protect your sleep",
+    tasks: [
+      { label: "Light Anki review only (20 min max)", note: "No new cards — just review what you already know", freq: "daily" },
+      { label: "Skim grammar notes for your top 5 hardest points", note: "Read, don't drill — trust your preparation", freq: "daily" },
+      { label: "Get 8 hours of sleep", note: "Sleep matters more than last-minute cramming", freq: "daily" },
+      { label: "Listen to easy Japanese content (20 min)", note: "Something enjoyable — anime, music, a podcast", freq: "daily" },
+    ]
+  },
+];
 
-// ─── BUILD CHECKLIST ─────────────────────────────────────────────────────
-function buildChecklist() {
-  const root = document.getElementById('checklist-root');
-  let idx = 0;
+// ─── GIF SOURCES ──────────────────────────────────────────────────────────
+const GIF_SLEEPING = "data:image/gif;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const GIF_SEMI     = "data:image/gif;base64,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Tvs58+Z8w6PXnnJ9+vPua7sfH3w97tTfcfN9f98vZPregdffgAQWaOCBCCao4IIDBgQAOwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const GIF_FINISHED = "data:image/gif;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
-  phases.forEach((phase, pi) => {
-    const ph = document.createElement('div');
-    ph.className = 'phase-heading';
-    ph.textContent = phase.label;
-    root.appendChild(ph);
-
-    phase.sections.forEach((sec, si) => {
-      const card = document.createElement('div');
-      card.className = 'section-card';
-
-      const progMini = document.createElement('div');
-      progMini.className = 'section-prog-mini';
-      progMini.id = `secprog-${pi}-${si}`;
-      progMini.textContent = `0 / ${sec.items.length}`;
-
-      card.innerHTML = `
-        <div class="section-header">
-          <div class="section-title-wrap">
-            <div class="section-title">${sec.title}</div>
-            <div class="section-sub">${sec.sub}</div>
-          </div>
-        </div>
-        <div class="section-bar-wrap"><div class="section-bar" id="secbar-${pi}-${si}"></div></div>
-      `;
-      card.querySelector('.section-header').appendChild(progMini);
-
-      sec.items.forEach((item, ii) => {
-        const id = `item-${pi}-${si}-${ii}`;
-        state[id] = false;
-        totalItems++;
-
-        const row = document.createElement('div');
-        row.className = 'task-item';
-        row.id = id;
-        row.innerHTML = `
-          <div class="checkbox" id="cb-${id}"></div>
-          <div class="task-text">
-            <div class="task-label">${item.label}</div>
-            <div class="task-note">${item.note}</div>
-          </div>
-          <span class="task-badge badge-${item.freq}">${item.freq}</span>
-        `;
-        row.addEventListener('click', () => toggleItem(id, pi, si, sec));
-        card.appendChild(row);
-      });
-
-      root.appendChild(card);
-    });
-  });
-
-  document.getElementById('prog-total').textContent = totalItems;
-  updateTama(0, totalItems);
+// ─── DATE LOGIC ───────────────────────────────────────────────────────────
+function getCurrentWeek() {
+  const now = new Date();
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const week = Math.floor((now - STUDY_START) / msPerWeek) + 1;
+  return Math.max(1, week);
 }
 
-function toggleItem(id, pi, si, sec) {
+function getScheduleEntry(week) {
+  for (const entry of SCHEDULE) {
+    if (week >= entry.weeks[0] && week <= entry.weeks[1]) return entry;
+  }
+  // Past the schedule
+  return null;
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+const state = {};
+let totalItems = 0;
+let currentWeek = getCurrentWeek();
+let currentEntry = getScheduleEntry(currentWeek);
+
+// ─── BUILD CHECKLIST ──────────────────────────────────────────────────────
+function buildChecklist() {
+  const root = document.getElementById('checklist-root');
+  root.innerHTML = '';
+  totalItems = 0;
+  Object.keys(state).forEach(k => delete state[k]);
+
+  // ── Week banner ──
+  const banner = document.createElement('div');
+  banner.className = 'week-banner';
+  if (currentEntry) {
+    banner.innerHTML = `
+      <div class="week-badge" style="background:${currentEntry.phaseColor}22;color:${currentEntry.phaseColor};border-color:${currentEntry.phaseColor}44">
+        Week ${currentWeek} · ${currentEntry.phase}
+      </div>
+      <div class="week-title">${currentEntry.title}</div>
+      <div class="week-sub">${currentEntry.sub}</div>
+    `;
+  } else if (currentWeek < 1) {
+    banner.innerHTML = `<div class="week-title">Study starts May 2! Get ready 🌸</div>`;
+  } else {
+    banner.innerHTML = `<div class="week-title">🎌 Exam week — you've done the work!</div>`;
+  }
+  root.appendChild(banner);
+
+  if (!currentEntry) return;
+
+  // ── Always section ──
+  buildSection(root, {
+    title: "Every Session",
+    sub: "Always do these — opening & closing routine",
+    color: "#ff85a1",
+    tasks: ALWAYS_TASKS
+  }, 'always');
+
+  // ── This week's tasks ──
+  buildSection(root, {
+    title: "This Week's Focus",
+    sub: currentEntry.sub,
+    color: currentEntry.phaseColor,
+    tasks: currentEntry.tasks
+  }, 'week');
+
+  document.getElementById('prog-total').textContent = totalItems;
+  updateProgress();
+}
+
+function buildSection(root, sec, prefix) {
+  const ph = document.createElement('div');
+  ph.className = 'phase-heading';
+  ph.innerHTML = `<span style="color:${sec.color}">${sec.title}</span>`;
+  root.appendChild(ph);
+
+  const card = document.createElement('div');
+  card.className = 'section-card';
+  card.style.borderColor = sec.color + '33';
+
+  const progMiniId = `secprog-${prefix}`;
+  card.innerHTML = `
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-title">${sec.title}</div>
+        <div class="section-sub">${sec.sub}</div>
+      </div>
+      <div class="section-prog-mini" id="${progMiniId}">0 / ${sec.tasks.length}</div>
+    </div>
+    <div class="section-bar-wrap"><div class="section-bar" id="secbar-${prefix}" style="background:linear-gradient(90deg,${sec.color},${sec.color}99)"></div></div>
+  `;
+
+  sec.tasks.forEach((item, ii) => {
+    const id = `${prefix}-${ii}`;
+    state[id] = false;
+    totalItems++;
+
+    const row = document.createElement('div');
+    row.className = 'task-item';
+    row.id = `row-${id}`;
+    const badgeClass = item.freq === 'weekly' ? 'badge-weekly' : 'badge-daily';
+    const badgeLabel = item.freq === 'weekly' ? 'weekly — do once' : 'daily';
+    row.innerHTML = `
+      <div class="checkbox" id="cb-${id}"></div>
+      <div class="task-text">
+        <div class="task-label">${item.label}</div>
+        <div class="task-note">${item.note}</div>
+      </div>
+      <span class="task-badge ${badgeClass}">${badgeLabel}</span>
+    `;
+    row.addEventListener('click', () => toggleItem(id, prefix, sec));
+    card.appendChild(row);
+  });
+
+  root.appendChild(card);
+}
+
+function toggleItem(id, prefix, sec) {
   state[id] = !state[id];
-  const row = document.getElementById(id);
-  const cb = document.getElementById(`cb-${id}`);
+  const row = document.getElementById(`row-${id}`);
+  const cb  = document.getElementById(`cb-${id}`);
   row.classList.toggle('done', state[id]);
   cb.textContent = state[id] ? '✓' : '';
-  cb.classList.toggle('pop');
-  setTimeout(() => cb.classList.remove('pop'), 300);
-
   if (state[id]) spawnConfetti(row);
 
   // update section bar
-  const sectionKeys = sec.items.map((_, ii) => `item-${pi}-${si}-${ii}`);
+  const sectionKeys = Object.keys(state).filter(k => k.startsWith(prefix + '-'));
   const secDone = sectionKeys.filter(k => state[k]).length;
-  document.getElementById(`secbar-${pi}-${si}`).style.width = (secDone / sec.items.length * 100) + '%';
-  document.getElementById(`secprog-${pi}-${si}`).textContent = `${secDone} / ${sec.items.length}`;
+  const secTotal = sectionKeys.length;
+  document.getElementById(`secbar-${prefix}`).style.width = (secDone / secTotal * 100) + '%';
+  document.getElementById(`secprog-${prefix}`).textContent = `${secDone} / ${secTotal}`;
 
   updateProgress();
 }
 
 function updateProgress() {
-  const done = Object.values(state).filter(Boolean).length;
-  const pct = totalItems ? Math.round(done / totalItems * 100) : 0;
+  const done  = Object.values(state).filter(Boolean).length;
+  const pct   = totalItems ? Math.round(done / totalItems * 100) : 0;
   document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-done').textContent = done;
-  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-done').textContent  = done;
+  document.getElementById('prog-pct').textContent   = pct + '%';
   updateTama(done, totalItems);
 }
 
@@ -750,220 +923,83 @@ function resetAll() {
   document.querySelectorAll('.task-item').forEach(r => r.classList.remove('done'));
   document.querySelectorAll('.checkbox').forEach(cb => cb.textContent = '');
   document.querySelectorAll('.section-bar').forEach(b => b.style.width = '0%');
-  phases.forEach((phase, pi) => phase.sections.forEach((sec, si) => {
-    const el = document.getElementById(`secprog-${pi}-${si}`);
-    if (el) el.textContent = `0 / ${sec.items.length}`;
-  }));
+  const total = Object.keys(state).length;
+  ['always','week'].forEach(prefix => {
+    const el = document.getElementById(`secprog-${prefix}`);
+    if (el) {
+      const count = Object.keys(state).filter(k => k.startsWith(prefix+'-')).length;
+      el.textContent = `0 / ${count}`;
+    }
+  });
   document.getElementById('prog-fill').style.width = '0%';
   document.getElementById('prog-done').textContent = '0';
-  document.getElementById('prog-pct').textContent = '0%';
+  document.getElementById('prog-pct').textContent  = '0%';
   updateTama(0, totalItems);
 }
 
-// ─── TAMAGOTCHI ──────────────────────────────────────────────────────────
-let animFrame = 0;
-let animTimer = 0;
-
+// ─── TAMAGOTCHI ───────────────────────────────────────────────────────────
 const moods = [
-  { min: 0,   label: "Wake me up with some tasks! 😴",       bodyColor: '#d8d0e8', eyeType: 'sleepy',   mouthType: 'flat',   blush: false, sparkle: false },
-  { min: 0.01,label: "Ok ok, I'm awake... 🥱",               bodyColor: '#e8d8f0', eyeType: 'half',     mouthType: 'flat',   blush: false, sparkle: false },
-  { min: 0.15,label: "Let's do this! 🌱",                    bodyColor: '#f0c8e0', eyeType: 'open',     mouthType: 'smile',  blush: false, sparkle: false },
-  { min: 0.35,label: "You're on a roll! 💪",                 bodyColor: '#ffb3c8', eyeType: 'open',     mouthType: 'big',    blush: true,  sparkle: false },
-  { min: 0.55,label: "Halfway there, sugoi! ✨",             bodyColor: '#ff8fab', eyeType: 'star',     mouthType: 'big',    blush: true,  sparkle: true  },
-  { min: 0.75,label: "Almost done, senpai noticed! 🌟",      bodyColor: '#ff6b9d', eyeType: 'star',     mouthType: 'uwu',    blush: true,  sparkle: true  },
-  { min: 0.95,label: "PERFECT SESSION! 合格確実！ 🎉",        bodyColor: '#ff4785', eyeType: 'heart',    mouthType: 'uwu',    blush: true,  sparkle: true  },
+  { min: 0,    label: "Wake me up with some tasks! 😴" },
+  { min: 0.01, label: "Ok ok, I'm awake... 🥱" },
+  { min: 0.25, label: "Let's do this! 🌱" },
+  { min: 0.45, label: "You're on a roll! 💪" },
+  { min: 0.65, label: "Almost there, keep going! ✨" },
+  { min: 0.75, label: "Amazing work, senpai! 🌟" },
+  { min: 0.95, label: "PERFECT SESSION！合格確実！🎉" },
 ];
 
-function getMood(done, total) {
-  if (total === 0) return moods[0];
-  const pct = done / total;
-  let mood = moods[0];
-  for (const m of moods) { if (pct >= m.min) mood = m; }
-  return mood;
+function getMoodLabel(pct) {
+  let label = moods[0].label;
+  for (const m of moods) { if (pct >= m.min) label = m.label; }
+  return label;
 }
 
 function updateTama(done, total) {
-  const mood = getMood(done, total);
-  document.getElementById('tama-mood').textContent = mood.label;
   const pct = total ? done / total : 0;
+  document.getElementById('tama-mood').textContent = getMoodLabel(pct);
   document.getElementById('tama-xp-bar').style.width = (pct * 100) + '%';
   document.getElementById('tama-xp-label').textContent = `${done} / ${total} tasks`;
-  drawTama(mood, pct);
-}
 
-function drawTama(mood, pct) {
   const canvas = document.getElementById('tama');
-  const ctx = canvas.getContext('2d');
-  const W = 120, H = 120;
-  ctx.clearRect(0, 0, W, H);
+  const gif    = document.getElementById('tama-gif');
 
-  const cx = W / 2, cy = H / 2 + 4;
-  const bounce = mood.sparkle ? Math.sin(Date.now() / 300) * 3 : 0;
-
-  // body
-  ctx.beginPath();
-  ctx.ellipse(cx, cy + bounce, 36, 32, 0, 0, Math.PI * 2);
-  ctx.fillStyle = mood.bodyColor;
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(180,100,140,0.2)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // ears
-  ctx.beginPath();
-  ctx.ellipse(cx - 22, cy - 24 + bounce, 10, 14, -0.4, 0, Math.PI * 2);
-  ctx.fillStyle = mood.bodyColor;
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.ellipse(cx + 22, cy - 24 + bounce, 10, 14, 0.4, 0, Math.PI * 2);
-  ctx.fillStyle = mood.bodyColor;
-  ctx.fill();
-  ctx.stroke();
-
-  // inner ear
-  ctx.beginPath();
-  ctx.ellipse(cx - 22, cy - 24 + bounce, 5, 8, -0.4, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffcdd2';
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + 22, cy - 24 + bounce, 5, 8, 0.4, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffcdd2';
-  ctx.fill();
-
-  // tail
-  ctx.beginPath();
-  ctx.moveTo(cx + 30, cy + bounce + 10);
-  ctx.quadraticCurveTo(cx + 52, cy + bounce, cx + 46, cy + bounce - 16);
-  ctx.strokeStyle = mood.bodyColor;
-  ctx.lineWidth = 7;
-  ctx.lineCap = 'round';
-  ctx.stroke();
-
-  // blush
-  if (mood.blush) {
-    ctx.beginPath();
-    ctx.ellipse(cx - 18, cy + bounce + 6, 8, 5, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,100,150,0.25)';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cx + 18, cy + bounce + 6, 8, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // eyes
-  const eyeY = cy - 4 + bounce;
-  if (mood.eyeType === 'sleepy') {
-    ctx.beginPath(); ctx.arc(cx - 10, eyeY, 5, Math.PI, 0); ctx.strokeStyle = '#7a5060'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx + 10, eyeY, 5, Math.PI, 0); ctx.stroke();
-  } else if (mood.eyeType === 'half') {
-    ctx.beginPath(); ctx.arc(cx - 10, eyeY, 5, Math.PI * 1.1, Math.PI * 1.9); ctx.strokeStyle = '#7a5060'; ctx.lineWidth = 2; ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx + 10, eyeY, 5, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
-  } else if (mood.eyeType === 'open') {
-    ctx.beginPath(); ctx.arc(cx - 10, eyeY, 5, 0, Math.PI * 2); ctx.fillStyle = '#5a3050'; ctx.fill();
-    ctx.beginPath(); ctx.arc(cx + 10, eyeY, 5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx - 9, eyeY - 1, 2, 0, Math.PI * 2); ctx.fillStyle = 'white'; ctx.fill();
-    ctx.beginPath(); ctx.arc(cx + 11, eyeY - 1, 2, 0, Math.PI * 2); ctx.fill();
-  } else if (mood.eyeType === 'star') {
-    drawStar(ctx, cx - 10, eyeY, 6, '#ffcc00');
-    drawStar(ctx, cx + 10, eyeY, 6, '#ffcc00');
-  } else if (mood.eyeType === 'heart') {
-    drawHeart(ctx, cx - 10, eyeY - 2, 7, '#ff4785');
-    drawHeart(ctx, cx + 10, eyeY - 2, 7, '#ff4785');
-  }
-
-  // mouth
-  const mouthY = cy + 10 + bounce;
-  ctx.strokeStyle = '#c06080';
-  ctx.lineWidth = 2;
-  ctx.lineCap = 'round';
-  if (mood.mouthType === 'flat') {
-    ctx.beginPath(); ctx.moveTo(cx - 8, mouthY); ctx.lineTo(cx + 8, mouthY); ctx.stroke();
-  } else if (mood.mouthType === 'smile') {
-    ctx.beginPath(); ctx.arc(cx, mouthY - 4, 8, 0.2, Math.PI - 0.2); ctx.stroke();
-  } else if (mood.mouthType === 'big') {
-    ctx.beginPath(); ctx.arc(cx, mouthY - 4, 10, 0.1, Math.PI - 0.1); ctx.fillStyle = '#c06080'; ctx.fill(); ctx.stroke();
-  } else if (mood.mouthType === 'uwu') {
-    ctx.beginPath(); ctx.arc(cx - 6, mouthY - 3, 5, 0.1, Math.PI - 0.1); ctx.fillStyle = '#ff4785'; ctx.fill();
-    ctx.beginPath(); ctx.arc(cx + 6, mouthY - 3, 5, 0.1, Math.PI - 0.1); ctx.fill();
-  }
-
-  // sparkles
-  if (mood.sparkle) {
-    const t = Date.now() / 500;
-    const sparks = [[cx - 30, cy - 28], [cx + 32, cy - 22], [cx - 26, cy + 18], [cx + 28, cy + 14]];
-    sparks.forEach(([x, y], i) => {
-      const s = Math.sin(t + i * 1.2) > 0;
-      if (s) {
-        ctx.font = '14px serif'; ctx.fillText('✦', x, y);
-      }
-    });
+  if (pct < 0.25) {
+    canvas.style.display = 'none'; gif.style.display = 'block'; gif.src = GIF_SLEEPING;
+  } else if (pct < 0.75) {
+    canvas.style.display = 'none'; gif.style.display = 'block'; gif.src = GIF_SEMI;
+  } else {
+    canvas.style.display = 'none'; gif.style.display = 'block'; gif.src = GIF_FINISHED;
   }
 }
 
-function drawStar(ctx, cx, cy, r, color) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.beginPath();
-  for (let i = 0; i < 5; i++) {
-    ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * r, -Math.sin((18 + i * 72) * Math.PI / 180) * r);
-    ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * r / 2, -Math.sin((54 + i * 72) * Math.PI / 180) * r / 2);
-  }
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-}
+function animLoop() { requestAnimationFrame(animLoop); }
 
-function drawHeart(ctx, cx, cy, size, color) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.beginPath();
-  ctx.moveTo(0, size * 0.35);
-  ctx.bezierCurveTo(size * 0.6, -size * 0.3, size * 1.1, size * 0.3, 0, size);
-  ctx.bezierCurveTo(-size * 1.1, size * 0.3, -size * 0.6, -size * 0.3, 0, size * 0.35);
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-}
-
-// animation loop
-function animLoop() {
-  const done = Object.values(state).filter(Boolean).length;
-  const mood = getMood(done, totalItems);
-  if (mood.sparkle || mood.eyeType === 'sleepy') drawTama(mood, totalItems ? done / totalItems : 0);
-  requestAnimationFrame(animLoop);
-}
-
-// ─── COUNTDOWN ───────────────────────────────────────────────────────────
-const EXAM_DATE = new Date('2026-12-06T09:00:00');
-
-const cdMessages = [
-  [300, "You're almost there! 最後の力を！ 🔥"],
-  [60,  "One month left — push it! 頑張れ！ 💪"],
-  [100, "Two months to go — keep the streak! 🌟"],
-  [150, "Study hard, you've got this! 勉強！ ✨"],
-  [200, "You're in the home stretch! がんばって！ 🌸"],
-  [Infinity, "Every day counts — start studying! 毎日！ 🎌"],
-];
-
+// ─── COUNTDOWN ────────────────────────────────────────────────────────────
 function updateCountdown() {
-  const now = new Date();
+  const now  = new Date();
   const diff = EXAM_DATE - now;
   if (diff <= 0) {
     ['cd-d','cd-h','cd-m','cd-s'].forEach(id => document.getElementById(id).textContent = '0');
-    document.getElementById('cd-message').textContent = '試験の日！頑張って！ 🎌';
+    document.getElementById('cd-message').textContent = '試験の日！頑張って！🎌';
     return;
   }
   const days = Math.floor(diff / 86400000);
   const hours = Math.floor((diff % 86400000) / 3600000);
-  const mins = Math.floor((diff % 3600000) / 60000);
-  const secs = Math.floor((diff % 60000) / 1000);
-  document.getElementById('cd-d').textContent = String(days).padStart(2, '0');
-  document.getElementById('cd-h').textContent = String(hours).padStart(2, '0');
-  document.getElementById('cd-m').textContent = String(mins).padStart(2, '0');
-  document.getElementById('cd-s').textContent = String(secs).padStart(2, '0');
-  for (const [threshold, msg] of cdMessages) {
+  const mins  = Math.floor((diff % 3600000) / 60000);
+  const secs  = Math.floor((diff % 60000) / 1000);
+  document.getElementById('cd-d').textContent = String(days).padStart(2,'0');
+  document.getElementById('cd-h').textContent = String(hours).padStart(2,'0');
+  document.getElementById('cd-m').textContent = String(mins).padStart(2,'0');
+  document.getElementById('cd-s').textContent = String(secs).padStart(2,'0');
+
+  const msgs = [
+    [14,  "Final stretch! 最後の力を！🔥"],
+    [30,  "One month left — push it! 頑張れ！💪"],
+    [60,  "Two months to go — keep the streak! 🌟"],
+    [150, "You're making great progress! がんばって！🌸"],
+    [Infinity, "Every day counts — let's study! 毎日！🎌"],
+  ];
+  for (const [threshold, msg] of msgs) {
     if (days <= threshold) { document.getElementById('cd-message').textContent = msg; break; }
   }
 }
@@ -976,7 +1012,7 @@ function spawnConfetti(el) {
     const c = document.createElement('div');
     c.className = 'confetti-piece';
     c.style.left = (rect.left + Math.random() * rect.width) + 'px';
-    c.style.top = (rect.top + window.scrollY + Math.random() * 10) + 'px';
+    c.style.top  = (rect.top + window.scrollY + Math.random() * 10) + 'px';
     c.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
     c.style.transform = `rotate(${Math.random()*360}deg)`;
     c.style.animationDelay = (Math.random() * 0.3) + 's';
@@ -994,7 +1030,7 @@ function spawnPetals() {
     p.textContent = '🌸';
     p.style.left = (Math.random() * 100) + 'vw';
     p.style.animationDuration = (8 + Math.random() * 10) + 's';
-    p.style.animationDelay = (Math.random() * 12) + 's';
+    p.style.animationDelay   = (Math.random() * 12) + 's';
     p.style.fontSize = (10 + Math.random() * 10) + 'px';
     container.appendChild(p);
   }
@@ -1006,7 +1042,6 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 animLoop();
 spawnPetals();
-updateTama(0, totalItems);
 </script>
 </body>
 </html>
