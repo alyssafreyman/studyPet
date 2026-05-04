@@ -550,7 +550,7 @@
 <script>
 // ─── STUDY SCHEDULE ───────────────────────────────────────────────────────
 // Study start date: May 2, 2026. Exam: Dec 6, 2026.
-const STUDY_START = new Date('2026-05-02');
+const STUDY_START = new Date('2026-04-27'); // Sunday before May 2
 const EXAM_DATE   = new Date('2026-12-06T09:00:00');
 
 // Each entry: { weekStart, weekEnd (inclusive, 1-indexed), phase, label, sections[] }
@@ -778,8 +778,12 @@ const GIF_FINISHED = "data:image/gif;base64,R0lGODlhQABAAPcAAP//AAAAAHFfmd3fw8+g
 // ─── DATE LOGIC ───────────────────────────────────────────────────────────
 function getCurrentWeek() {
   const now = new Date();
+  const startSunday = new Date(STUDY_START);
+  startSunday.setDate(STUDY_START.getDate() - STUDY_START.getDay());
+  const nowSunday = new Date(now);
+  nowSunday.setDate(now.getDate() - now.getDay());
   const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const week = Math.floor((now - STUDY_START) / msPerWeek) + 1;
+  const week = Math.floor((nowSunday - startSunday) / msPerWeek) + 1;
   return Math.max(1, week);
 }
 
